@@ -12,13 +12,14 @@ from main import parse_args
 
 
 def write_train_txt(cfg):
-    file = open(os.path.join(cfg.dataset_path, "train_tumor_set.txt"), "a")
+    file = open(os.path.join(os.getcwd(), "train_tumor_set.txt"), "a")
     dirs = os.listdir(cfg.dataset_path + "/Images")
     dirs.sort(key=lambda x: int(x))
     for i, dir in enumerate(dirs):
         print("第{}个dir".format(i))
         dir_path = os.path.join(cfg.dataset_path + "/Images", dir)
         imgs = os.listdir(dir_path)
+        imgs.sort(key = lambda x:int(x.split('.')[0].split('_')[1]))
         for img in imgs:
             label_path = os.path.join(cfg.dataset_path + "/Labels", dir, img)
             label_nii = nib.load(label_path)

@@ -6,11 +6,11 @@ class encode_layers(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size):
         super(encode_layers, self).__init__()
         # 第一次卷积，层内卷积
-        self.conv1 = nn.Conv3d(in_channels, out_channels, kernel_size, padding='same')
+        self.conv1 = nn.Conv3d(in_channels, out_channels, kernel_size, padding = 'same')
         # bug:ValueError padiing='same' is not supported for strided convolutions
         self.bn1 = nn.BatchNorm3d(out_channels)
         # 第二次卷积，层间卷积
-        self.conv2 = nn.Conv3d(out_channels, out_channels, (3, 1, 1), padding='same')
+        self.conv2 = nn.Conv3d(out_channels, out_channels, (3, 1, 1), padding = 'same')
         self.bn2 = nn.BatchNorm3d(out_channels)
         self.drop = nn.Dropout(p=0.5)
         self.relu = nn.ReLU(inplace=True)
@@ -20,18 +20,12 @@ class encode_layers(nn.Module):
         conv1 = self.relu(conv1)
         conv1 = self.bn1(conv1)
         conv1 = self.drop(conv1)
-        print(conv1.shape)
         conv2 = self.conv2(conv1)
         conv2 = self.relu(conv2)
         conv2 = self.bn2(conv2)
         conv2 = self.drop(conv2)
-        print(conv2.shape)
         res = conv1 + conv2
         return res
-layer = encode_layers(1,32,(1,3,3)).eval()
-x = torch.randn((1,1,3,512,512))
-y = layer(x)
-print(y.shape)
 
 
 class down_operation(nn.Module):
@@ -52,13 +46,14 @@ class decode_layer(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, code_layer):
         super(decode_layer, self).__init__()
         self.code_layer = code_layer
-        self.deconv = nn.ConvTranspose3d(in_channels, out_channels, kernel_size, stride=(1, 2, 2))
+        self.deconv = nn.ConvTranspose3d(in_channels, in_channels, kernel_size, stride=(1, 2, 2),output_padding = (0,1,1))
         self.relu = nn.ReLU()
-        self.conv = nn.Conv3d(in_channels, out_channels, kernel_size)
+        self.conv = nn.Conv3d(in_channels, out_channels, kernel_size,padding = 'same')
         self.drop = nn.Dropout(p=0.5)
 
     def forward(self, x):
         deconv = self.deconv(x)
+        print('deconv.shape:',deconv.shape)
         merge = torch.cat((deconv, self.code_layer), dim=4)
         conv = self.conv(merge)
         res = deconv + conv
@@ -89,40 +84,47 @@ class HUnet(nn.Module):
         self.down4 = down_operation(256, 512, (1, 3, 3))
         # 卷积层5
         self.conv5_1 = encode_layers(512, 512, (1, 3, 3))
-        self.conv5_2 = nn.Conv3d(512, 512, (3, 1, 1))
+        self.conv5_2 = nn.Conv3d(512, 512, (3, 1, 1),padding = 'valid')
         self.relu = nn.ReLU()
         # 反卷积6
         self.deconv6 = nn.ConvTranspose3d(512, 256, (1, 3, 3), (1, 2, 2))
         self.conv4_2 = nn.Conv3d(256, 256, (3, 1, 1), padding='valid')
-        self.conv6 = nn.Conv3d(512, 256, (1, 3, 3))
+        self.conv6 = nn.Conv3d(256, 256, (1, 3, 3),padding='same')
         self.add6 = nn.ConvTranspose3d(256, 128, (1, 3, 3), (1, 2, 2))
         # 反卷积7
         self.deconv7 = nn.ConvTranspose3d(256, 128, (1, 3, 3), (1, 2, 2))
         self.conv3_2 = nn.Conv3d(128, 128, (3, 1, 1), padding='valid')
-        self.conv7 = nn.Conv3d(256, 128, (1, 3, 3))
+        self.conv7 = nn.Conv3d(128, 128, (1, 3, 3),padding='same')
         self.drop = nn.Dropout(p=0.5)
         self.add7 = nn.ConvTranspose3d(128, 64, (1, 3, 3), (1, 2, 2))
         # 反卷积8
         self.deconv8 = nn.ConvTranspose3d(128, 64, (1, 3, 3), (1, 2, 2))
         self.conv2_2 = nn.Conv3d(64, 64, (3, 1, 1), padding='valid')
-        self.conv8 = nn.Conv3d(128, 64, (1, 3, 3))
-        self.add8 = nn.ConvTranspose3d(64, 32, (1, 3, 3), (1, 2, 2))
+        self.conv8 = nn.Conv3d(64, 64, (1, 3, 3),padding='same')
+        self.add8 = nn.ConvTranspose3d(64, 32, (1, 3, 3), (1, 2, 2),padding='same')
         # 反卷积9
         self.deconv9 = nn.ConvTranspose3d(64, 32, (1, 3, 3), (1, 2, 2))
         self.conv1_2 = nn.Conv3d(32, 32, (3, 1, 1), padding='valid')
-        self.conv9 = nn.Conv3d(64, 32, (1, 3, 3))
+        self.conv9 = nn.Conv3d(32, 32, (1, 3, 3),padding='same')
 
         self.conv10 = nn.Conv3d(32, self.num_classes, (1, 1, 1))
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
         conv1_1 = self.conv1_1(x)
+        print('conv1_1:',conv1_1.shape)
         down1 = self.down1(conv1_1)
+        print('down1:',down1.shape)
         conv2_1 = self.conv2_1(down1)
+        print('conv2_1:',conv2_1.shape)
         down2 = self.down2(conv2_1)
+        print('down2:',down2.shape)
         conv3_1 = self.conv3_1(down2)
+        print('conv3_1:',conv3_1.shape)
         down3 = self.down3(conv3_1)
+        print('down3:',down3.shape)
         conv4_1 = self.conv4_1(down3)
+        print('conv4_1:',conv4_1.shape)
         down4 = self.down4(conv4_1)
         conv5_1 = self.conv5_1(down4)
         conv5_2 = self.conv5_2(conv5_1)
@@ -135,6 +137,7 @@ class HUnet(nn.Module):
         conv6 = self.conv6(merge6)
         conv6 = self.relu(conv6)
         conv6 = self.drop(conv6)
+        print(deconv6.shape,conv6.shape)
         res6 = deconv6+conv6
         add6 = deconv6+res6
         add6 = self.add6(add6)

@@ -14,7 +14,7 @@ def write_train_txt(cfg):
     dirs = os.listdir(cfg.test_dataset_path + "/Images")
     dirs.sort(key=lambda x: int(x))
     for i, dir in enumerate(dirs):
-        file = open(os.path.join(cfg.test_dataset_path, "test_set_" + str(dir) + ".txt"), "a")
+        file = open(os.path.join(os.getcwd(),'test_set_txt', "test_set_" + str(dir) + ".txt"), "a")
         print("第{}个dir".format(i))
         dir_path = os.path.join(cfg.test_dataset_path + "/Images", dir)
         imgs = os.listdir(dir_path)

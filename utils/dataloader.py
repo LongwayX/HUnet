@@ -144,11 +144,10 @@ class DeeplabDataset(Dataset):
             # png = Image.open(os.path.join(os.path.join(self.dataset_path, "Labels"), names[]))
 
         if self.random_data:
-            print('凑尼玛！')
             jpg, png = self.get_random_data(jpg, png, (int(self.image_size[1]), int(self.image_size[0])))
         # else:
             # jpg, png = letterbox_image(jpg, png, (int(self.image_size[1]), int(self.image_size[0])))
-        png = np.array(png, dtype='int32')
+        png = np.array(png,dtype='int32')
         # png[png >= self.num_classes] = self.num_classes
 
         if self.label_reverse:
@@ -158,14 +157,14 @@ class DeeplabDataset(Dataset):
             modify_png = png
         seg_labels = modify_png
         seg_labels = np.eye(self.num_classes + 1)[seg_labels.reshape([-1])]
-        seg_labels = seg_labels.reshape((int(self.image_size[1]), int(self.image_size[0]), self.num_classes + 1))
+        seg_labels = seg_labels.reshape((int(self.image_size[2]), int(self.image_size[3]), self.num_classes + 1))
 
         if not self.window_trunction:
             for k in range(len(jpgs)):
                 jpgs[k] = np.transpose(np.array(jpgs[k]), [2, 0, 1]) / 1024
         else:
             for k in range(len(jpgs)):
-                jpgs[k] = np.transpose(np.array(jpgs[k]), [2, 0, 1]) / 255
+                jpgs[k] = np.array(jpgs[k]) / 255
         jpgs = np.array(jpgs)
         jpgs = jpgs.reshape((self.image_size))
         return jpgs, modify_png, seg_labels
