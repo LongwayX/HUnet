@@ -33,7 +33,7 @@ class down_operation(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size):
         super(down_operation, self).__init__()
         self.down = nn.Sequential(
-            nn.Conv3d(in_channels, out_channels, kernel_size, stride=(1, 2, 2)),
+            nn.Conv3d(in_channels, out_channels, kernel_size, stride=(1, 2, 2),padding=(0,1,1)),
             nn.ReLU()
         )
 
@@ -46,16 +46,19 @@ class decode_layer(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, code_layer):
         super(decode_layer, self).__init__()
         self.code_layer = code_layer
-        self.deconv = nn.ConvTranspose3d(in_channels, in_channels, kernel_size, stride=(1, 2, 2),output_padding = (0,1,1))
+        self.deconv = nn.ConvTranspose3d(in_channels, in_channels, kernel_size, stride=(1, 2, 2),padding=(0, 1, 1))
         self.relu = nn.ReLU()
         self.conv = nn.Conv3d(in_channels, out_channels, kernel_size,padding = 'same')
         self.drop = nn.Dropout(p=0.5)
 
     def forward(self, x):
         deconv = self.deconv(x)
-        print('deconv.shape:',deconv.shape)
+        print('deconv.shape',deconv.shape)
+        deconv = self.relu(deconv)
         merge = torch.cat((deconv, self.code_layer), dim=4)
         conv = self.conv(merge)
+        conv = self.relu(conv)
+        conv = self.drop(conv)
         res = deconv + conv
         return res
 
@@ -126,12 +129,17 @@ class HUnet(nn.Module):
         conv4_1 = self.conv4_1(down3)
         print('conv4_1:',conv4_1.shape)
         down4 = self.down4(conv4_1)
+        print('down4:',down4.shape)
         conv5_1 = self.conv5_1(down4)
+        print('conv5_1:',conv5_1.shape)
         conv5_2 = self.conv5_2(conv5_1)
+        print('conv5_2:',conv5_2.shape)
         conv5_2 = self.relu(conv5_2)
         deconv6 = self.deconv6(conv5_2)
+        print('deconv6:',deconv6.shape)
         deconv6 = self.relu(deconv6)
         conv4_2 = self.conv4_2(conv4_1)
+        print('conv4_2:',conv4_2.shape)
         conv4_2 = self.relu(conv4_2)
         merge6 = torch.cat((deconv6,conv4_2),dim=4)
         conv6 = self.conv6(merge6)
