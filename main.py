@@ -67,7 +67,7 @@ def parse_args():
     parser.add_argument('--nii_use', type=bool, default=True, help="数据集的格式是否为nii,如果是nii，则需要换另一种方式打开")
     parser.add_argument('--window_trunction', type=bool, default=True, help="是否进行窗位窗宽截断")
 
-    parser.add_argument('--num_workers', type=int, default=4, help="")
+    parser.add_argument('--num_workers', type=int, default=1, help="")
     parser.add_argument('--cuda_use', type=bool, default=True, help="是否使用GPU训练")
     parser.add_argument('--log_dir', type=str, default="./logs/log", help="训练曲线的保存地址")
     parser.add_argument('--model_save_dir', type=str, default="./logs/model", help="训练模型的保存地址")
@@ -126,7 +126,7 @@ if __name__ == "__main__":
 #   GAM-batchsize-4-2; ECA-batchsize-4-4
 #   VOLO-batchsize-2-2
     if True:
-        training(cfg, model, train_lines, freeze=True, lr=1e-4, Init_Epoch=0, Interval_Epoch=10,
+        training(cfg, model, train_lines, freeze=False, lr=1e-4, Init_Epoch=0, Interval_Epoch=10,
                  Batch_size=2)
 
     if True:

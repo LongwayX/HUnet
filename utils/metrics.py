@@ -3,7 +3,8 @@ import torch.nn.functional as F
 
 
 def f_score(inputs, target, beta=1, smooth=1e-5, threhold=0.5):
-    n, c, h, w = inputs.size()
+    n, c,_, h, w = inputs.size()
+    inputs = inputs.reshape(n,c,h,w)
     nt, ht, wt, ct = target.size()
 
     if h != ht and w != wt:

@@ -69,7 +69,7 @@ def fit_one_epoch(cfg, model, optimizer, epoch, epoch_size, gen, Epoch):
                 else:
                     main_dice = Dice_loss(outputs, labels)
                     loss = loss + main_dice
-
+            #print('loss:',loss)
             with torch.no_grad():
                 _f_score = f_score(outputs, labels)  # 计算f_score
 

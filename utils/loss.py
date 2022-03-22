@@ -15,7 +15,7 @@ from torch import nn
 
 
 def CE_Loss(inputs, target, num_classes=21):
-    print(inputs.shape, target.shape) #(2,1,1,512,512),(2,512,512)
+    #print(inputs.shape, target.shape) #(2,1,1,512,512),(2,512,512)
     n, c, _,  h, w = inputs.size()
     inputs = inputs.reshape(n,c,h,w)
     nt, ht, wt = target.size()
