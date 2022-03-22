@@ -93,18 +93,18 @@ class HUnet(nn.Module):
         self.deconv6 = nn.ConvTranspose3d(512, 256, (1, 3, 3), (1, 2, 2), (0, 1, 1), (0, 1, 1))
         self.conv4_2 = nn.Conv3d(256, 256, (3, 1, 1),padding='valid')
         self.conv6 = nn.Conv3d(512, 256, (1, 3, 3),padding='same')
-        self.add6 = nn.ConvTranspose3d(256, 128, (1, 3, 3), (1, 2, 2))
+        self.add6 = nn.ConvTranspose3d(256, 128, (1, 3, 3), (1, 2, 2),(0, 1, 1), (0, 1, 1))
         # 反卷积7
         self.deconv7 = nn.ConvTranspose3d(256, 128, (1, 3, 3), (1, 2, 2),(0, 1, 1), (0, 1, 1))
         self.conv3_2 = nn.Conv3d(128, 128, (3, 1, 1), padding='valid')
         self.conv7 = nn.Conv3d(256, 128, (1, 3, 3),padding='same')
         self.drop = nn.Dropout(p=0.5)
-        self.add7 = nn.ConvTranspose3d(128, 64, (1, 3, 3), (1, 2, 2))
+        self.add7 = nn.ConvTranspose3d(128, 64, (1, 3, 3), (1, 2, 2),(0, 1, 1), (0, 1, 1))
         # 反卷积8
         self.deconv8 = nn.ConvTranspose3d(128, 64, (1, 3, 3), (1, 2, 2), (0, 1, 1), (0, 1, 1))
         self.conv2_2 = nn.Conv3d(64, 64, (3, 1, 1), padding='valid')
         self.conv8 = nn.Conv3d(128, 64, (1, 3, 3),padding='same')
-        self.add8 = nn.ConvTranspose3d(64, 32, (1, 3, 3), (1, 2, 2),padding='same')
+        self.add8 = nn.ConvTranspose3d(64, 32, (1, 3, 3), (1, 2, 2),(0, 1, 1), (0, 1, 1))
         # 反卷积9
         self.deconv9 = nn.ConvTranspose3d(64, 32, (1, 3, 3), (1, 2, 2), (0, 1, 1), (0, 1, 1))
         self.conv1_2 = nn.Conv3d(32, 32, (3, 1, 1), padding='valid')
@@ -148,9 +148,9 @@ class HUnet(nn.Module):
         conv6 = self.drop(conv6)
         res6 = deconv6+conv6
         add6 = deconv6+res6
-        print('add6.shape:',add6.shape)
         add6 = self.add6(add6)
         add6 = self.relu(add6)
+        print('add6.shape:',add6.shape)
         deconv7 = self.deconv7(res6)
         deconv7 = self.relu(deconv7)
         conv3_2 = self.conv3_2(conv3_1)
@@ -160,7 +160,8 @@ class HUnet(nn.Module):
         conv7 = self.relu(conv7)
         conv7 = self.drop(conv7)
         res7 = deconv7+conv7
-        add7 = res7+add6
+        print('res7.shape:',res7.shape)
+        add7 = res7+add6 
         add7 = self.add7(add7)
         add7 = self.relu(add7)
         deconv8 = self.deconv8(res7)
