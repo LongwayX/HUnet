@@ -15,7 +15,9 @@ from torch import nn
 
 
 def CE_Loss(inputs, target, num_classes=21):
-    n, c, h, w = inputs.size()
+    print(inputs.shape, target.shape) #(2,1,1,512,512),(2,512,512)
+    n, c, _,  h, w = inputs.size()
+    inputs = inputs.reshape(n,c,h,w)
     nt, ht, wt = target.size()
     if h != ht and w != wt:
         inputs = F.interpolate(inputs, size=(ht, wt), mode="bilinear", align_corners=True)
@@ -28,7 +30,8 @@ def CE_Loss(inputs, target, num_classes=21):
 
 
 def Dice_loss(inputs, target, beta=1, smooth=1e-5):
-    n, c, h, w = inputs.size()
+    n, c, _, h, w = inputs.size()
+    inputs = inputs.reshape(n,c,h,w)
     nt, ht, wt, ct = target.size()
 
     if h != ht and w != wt:

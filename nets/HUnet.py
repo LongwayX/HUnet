@@ -110,7 +110,7 @@ class HUnet(nn.Module):
         self.conv1_2 = nn.Conv3d(32, 32, (3, 1, 1), padding='valid')
         self.conv9 = nn.Conv3d(64, 32, (1, 3, 3),padding='same')
 
-        self.conv10 = nn.Conv3d(32, self.num_classes, (1, 1, 1))
+        self.conv10 = nn.Conv3d(32, 1, (1, 1, 1))
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
